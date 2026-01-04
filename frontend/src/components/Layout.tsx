@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
+import { InstallApp } from '@/components/InstallApp';
 import { NotificationBell } from '@/components/NotificationBell';
 import {
   LayoutDashboard,
@@ -151,7 +152,10 @@ export function Layout({ children }: LayoutProps) {
             </h1>
           </div>
 
-          <NotificationBell />
+          <div className="flex items-center gap-2">
+            <InstallApp />
+            <NotificationBell />
+          </div>
         </header>
 
         {/* Page content */}
