@@ -21,7 +21,7 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task, onStatusChange, onEdit, onDelete }: TaskCardProps) {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
 
   const priorityColors = {
     low: 'bg-muted text-muted-foreground',
@@ -138,7 +138,7 @@ export function TaskCard({ task, onStatusChange, onEdit, onDelete }: TaskCardPro
         </div>
 
         {/* Status update buttons */}
-        {task.status !== 'done' && (
+        {task.status !== 'done' && user?.id === task.assigned_to && (
           <div className="flex gap-2 pt-2">
             {task.status === 'todo' && (
               <Button
