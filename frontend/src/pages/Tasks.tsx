@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Layout } from '@/components/Layout';
 import { TaskCard } from '@/components/TaskCard';
 import { CreateTaskDialog } from '@/components/CreateTaskDialog';
+import { EditTaskDialog } from '@/components/EditTaskDialog';
 import { useTasks } from '@/hooks/useTasks';
 import { useUsers } from '@/hooks/useUsers';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,7 +18,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Loader2, CheckSquare, Filter } from 'lucide-react';
 import { isPast, isToday } from 'date-fns';
-import { TaskStatus } from '@/types';
+import { TaskStatus, Task } from '@/types';
 
 export default function Tasks() {
   const { isAdmin } = useAuth();
@@ -27,6 +28,7 @@ export default function Tasks() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<TaskStatus | 'all' | 'overdue'>('all');
   const [userFilter, setUserFilter] = useState<string>('all');
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const filteredTasks = useMemo(() => {
     return tasks.filter(task => {
@@ -159,6 +161,7 @@ export default function Tasks() {
                       key={task.id}
                       task={task}
                       onStatusChange={updateTaskStatus}
+                      onEdit={isAdmin ? setEditingTask : undefined}
                       onDelete={isAdmin ? deleteTask : undefined}
                     />
                   ))}
@@ -179,6 +182,7 @@ export default function Tasks() {
                       key={task.id}
                       task={task}
                       onStatusChange={updateTaskStatus}
+                      onEdit={isAdmin ? setEditingTask : undefined}
                       onDelete={isAdmin ? deleteTask : undefined}
                     />
                   ))}
@@ -199,6 +203,7 @@ export default function Tasks() {
                       key={task.id}
                       task={task}
                       onStatusChange={updateTaskStatus}
+                      onEdit={isAdmin ? setEditingTask : undefined}
                       onDelete={isAdmin ? deleteTask : undefined}
                     />
                   ))}
@@ -206,6 +211,14 @@ export default function Tasks() {
               </div>
             )}
           </div>
+        )}
+
+        {/* Edit Task Dialog */}
+        {editingTask && (
+          <EditTaskDialog
+            task={editingTask}
+            onSuccess={() => setEditingTask(null)}
+          />
         )}
       </div>
     </Layout>

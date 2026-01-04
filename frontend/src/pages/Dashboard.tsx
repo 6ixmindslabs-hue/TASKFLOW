@@ -1,10 +1,12 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { TaskCard } from '@/components/TaskCard';
 import { StatsCard } from '@/components/StatsCard';
 import { CreateTaskDialog } from '@/components/CreateTaskDialog';
+import { EditTaskDialog } from '@/components/EditTaskDialog';
 import { useTasks } from '@/hooks/useTasks';
 import { useAuth } from '@/hooks/useAuth';
+import { Task } from '@/types';
 import {
   CheckSquare,
   Clock,
@@ -17,6 +19,7 @@ import { isPast, isToday } from 'date-fns';
 export default function Dashboard() {
   const { isAdmin, profile } = useAuth();
   const { tasks, loading, updateTaskStatus, deleteTask } = useTasks();
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const stats = useMemo(() => {
     const myTasks = tasks;
@@ -123,12 +126,21 @@ export default function Dashboard() {
                   key={task.id}
                   task={task}
                   onStatusChange={updateTaskStatus}
+                  onEdit={isAdmin ? setEditingTask : undefined}
                   onDelete={isAdmin ? deleteTask : undefined}
                 />
               ))}
             </div>
           )}
         </div>
+
+        {/* Edit Task Dialog */}
+        {editingTask && (
+          <EditTaskDialog
+            task={editingTask}
+            onSuccess={() => setEditingTask(null)}
+          />
+        )}
       </div>
     </Layout>
   );

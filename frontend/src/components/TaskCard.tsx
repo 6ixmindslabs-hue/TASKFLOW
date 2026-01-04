@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Calendar, User, MoreVertical, Trash2, Clock } from 'lucide-react';
+import { Calendar, User, MoreVertical, Trash2, Clock, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, isPast, isToday, addDays, isBefore } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,10 +16,11 @@ import { useAuth } from '@/hooks/useAuth';
 interface TaskCardProps {
   task: Task;
   onStatusChange: (taskId: string, status: TaskStatus) => void;
+  onEdit?: (task: Task) => void;
   onDelete?: (taskId: string) => void;
 }
 
-export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
+export function TaskCard({ task, onStatusChange, onEdit, onDelete }: TaskCardProps) {
   const { isAdmin } = useAuth();
 
   const priorityColors = {
@@ -42,9 +43,9 @@ export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
 
   const getDueDateStatus = () => {
     if (!task.due_date || task.status === 'done') return null;
-    
+
     const dueDate = new Date(task.due_date);
-    
+
     if (isPast(dueDate) && !isToday(dueDate)) {
       return 'overdue';
     }

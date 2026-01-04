@@ -139,6 +139,36 @@ export function useTasks(showOnlyMyTasks: boolean = false) {
     return { error: null };
   };
 
+  const updateTask = async (taskId: string, updates: {
+    title?: string;
+    description?: string;
+    assigned_to?: string;
+    priority?: string;
+    due_date?: string;
+  }) => {
+    if (!user || !isAdmin) return { error: new Error('Unauthorized') };
+
+    const { error } = await supabase
+      .from('tasks')
+      .update({
+        title: updates.title,
+        description: updates.description || null,
+        assigned_to: updates.assigned_to,
+        priority: updates.priority as Task['priority'],
+        due_date: updates.due_date || null,
+      })
+      .eq('id', taskId);
+
+    if (error) {
+      toast.error('Failed to update task');
+      return { error };
+    }
+
+    toast.success('Task updated successfully');
+    fetchTasks();
+    return { error: null };
+  };
+
   const deleteTask = async (taskId: string) => {
     if (!user || !isAdmin) return { error: new Error('Unauthorized') };
 
@@ -167,6 +197,7 @@ export function useTasks(showOnlyMyTasks: boolean = false) {
     tasks,
     loading,
     createTask,
+    updateTask,
     updateTaskStatus,
     deleteTask,
     refetch: fetchTasks,
