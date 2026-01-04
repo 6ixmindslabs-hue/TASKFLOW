@@ -13,6 +13,12 @@ export function useUsers() {
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Helper to get sanitized API URL
+  const getApiUrl = () => {
+    const url = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+    return url.replace(/\/$/, '');
+  };
+
   const fetchUsers = async () => {
     if (!user) return;
 
@@ -59,7 +65,7 @@ export function useUsers() {
     if (!user || !isAdmin) return { error: new Error('Unauthorized') };
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/users/create`, {
+      const response = await fetch(`${getApiUrl()}/api/users/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -98,7 +104,7 @@ export function useUsers() {
     if (!user || !isAdmin) return { error: new Error('Unauthorized') };
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/users/${userId}`, {
+      const response = await fetch(`${getApiUrl()}/api/users/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -128,7 +134,7 @@ export function useUsers() {
     if (!user || !isAdmin) return { error: new Error('Unauthorized') };
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/users/${userId}`, {
+      const response = await fetch(`${getApiUrl()}/api/users/${userId}`, {
         method: 'DELETE',
       });
 
