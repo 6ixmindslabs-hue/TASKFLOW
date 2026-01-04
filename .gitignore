@@ -23,3 +23,11 @@ dist-ssr
 *.sln
 *.sw?
 .env
+dist_electron
+out
+release
+*.exe
+*.dmg
+*.AppImage
+*.deb
+*.rpm
