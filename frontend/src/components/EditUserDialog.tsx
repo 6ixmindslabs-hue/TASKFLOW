@@ -7,6 +7,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -95,6 +96,9 @@ export function EditUserDialog({ userId, username, role }: EditUserDialogProps) 
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-semibold">Edit User</DialogTitle>
+                    <DialogDescription className="text-sm text-muted-foreground">
+                        Make changes to the user account here. Click update when you're done.
+                    </DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
