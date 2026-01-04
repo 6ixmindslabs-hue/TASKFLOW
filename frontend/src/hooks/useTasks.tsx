@@ -13,10 +13,12 @@ export function useTasks() {
     if (!user) return;
 
     setLoading(true);
-    
+
+    // Fetch only tasks assigned to the current user
     const { data: tasksData, error } = await supabase
       .from('tasks')
       .select('*')
+      .eq('assigned_to', user.id)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -27,14 +29,14 @@ export function useTasks() {
 
     // Fetch profiles for assigned users
     const userIds = [...new Set((tasksData || []).map(t => t.assigned_to).filter(Boolean))];
-    
+
     let profilesMap: Record<string, Profile> = {};
     if (userIds.length > 0) {
       const { data: profilesData } = await supabase
         .from('profiles')
         .select('*')
         .in('user_id', userIds);
-      
+
       if (profilesData) {
         profilesMap = (profilesData as Profile[]).reduce((acc, p) => {
           acc[p.user_id] = p;
