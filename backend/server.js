@@ -12,8 +12,9 @@ const PORT = process.env.PORT || 4000;
 const allowedOrigins = [
     "http://localhost:8080",
     "http://localhost:5173",
-    "https://taskflow-ten-mu.vercel.app" // Your Vercel frontend domain
-];
+    process.env.FRONTEND_URL,
+    "https://taskflow-ten-mu.vercel.app"
+].filter(Boolean);
 
 app.use(cors({
     origin: function (origin, callback) {
