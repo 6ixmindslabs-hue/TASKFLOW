@@ -46,8 +46,7 @@ export default function Dashboard() {
         if (aOverdue && !bOverdue) return -1;
         if (!aOverdue && bOverdue) return 1;
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      })
-      .slice(0, 6);
+      });
   }, [tasks]);
 
   if (loading) {
