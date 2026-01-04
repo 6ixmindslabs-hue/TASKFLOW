@@ -15,32 +15,51 @@ export function useTasks(showOnlyMyTasks: boolean = false) {
     setLoading(true);
 
     try {
-      // Fetch tasks with user profiles in a single query using join
+      // Fetch tasks first without the join that was causing issues
       let query = supabase
         .from('tasks')
-        .select(`
-          *,
-          assigned_user:profiles!tasks_assigned_to_fkey(*)
-        `);
+        .select('*');
 
       // If showOnlyMyTasks is true OR user is not admin, filter by assigned_to
       if (showOnlyMyTasks || !isAdmin) {
         query = query.eq('assigned_to', user.id);
       }
 
-      const { data: tasksData, error } = await query.order('created_at', { ascending: false });
+      const { data: tasksData, error: tasksError } = await query.order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching tasks:', error);
+      if (tasksError) {
+        console.error('Error fetching tasks:', tasksError);
         setLoading(false);
         return;
       }
 
-      // Map the data to match the Task type
-      const tasksWithProfiles = (tasksData || []).map(task => ({
-        ...task,
-        assigned_user: task.assigned_user || undefined,
-      })) as Task[];
+      let tasksWithProfiles = (tasksData || []) as Task[];
+
+      // Collect user IDs to fetch profiles
+      const userIds = tasksData
+        ?.map(t => t.assigned_to)
+        .filter(id => id) as string[];
+
+      if (userIds && userIds.length > 0) {
+        const uniqueUserIds = [...new Set(userIds)];
+
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('*')
+          .in('user_id', uniqueUserIds);
+
+        if (profilesError) {
+          console.error('Error fetching profiles:', profilesError);
+        } else if (profilesData) {
+          // Map profiles to tasks
+          const profilesMap = new Map(profilesData.map(p => [p.user_id, p]));
+
+          tasksWithProfiles = tasksWithProfiles.map(task => ({
+            ...task,
+            assigned_user: task.assigned_to ? profilesMap.get(task.assigned_to) : undefined,
+          }));
+        }
+      }
 
       setTasks(tasksWithProfiles);
     } catch (error) {
