@@ -30,6 +30,22 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Root endpoint
+app.get("/", (req, res) => {
+    res.json({
+        status: "ok",
+        message: "TaskFlow Backend API",
+        version: "1.0.0",
+        endpoints: [
+            "GET /api/health",
+            "GET /api/database-check",
+            "POST /api/users/create",
+            "PUT /api/users/:userId",
+            "DELETE /api/users/:userId"
+        ]
+    });
+});
+
 // Health check endpoint
 app.get("/api/health", (req, res) => {
     res.json({ status: "ok", message: "Backend is running!" });
