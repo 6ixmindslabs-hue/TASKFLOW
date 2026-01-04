@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -28,8 +28,6 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function Auth() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [checkingAdmin, setCheckingAdmin] = useState(true);
-  const [hasAdmin, setHasAdmin] = useState(true);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -38,24 +36,6 @@ export default function Auth() {
       password: '',
     },
   });
-
-  useEffect(() => {
-    // Check if any admin exists
-    const checkAdmin = async () => {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('id')
-        .eq('role', 'admin')
-        .limit(1);
-
-      if (!error) {
-        setHasAdmin(data && data.length > 0);
-      }
-      setCheckingAdmin(false);
-    };
-
-    checkAdmin();
-  }, []);
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
@@ -76,13 +56,7 @@ export default function Auth() {
     navigate('/dashboard');
   };
 
-  if (checkingAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center gradient-dark">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 gradient-dark">
@@ -160,23 +134,11 @@ export default function Auth() {
             </form>
           </Form>
 
-          {!hasAdmin ? (
-            <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground mb-2">
-                No admin account found.
-              </p>
-              <Link
-                to="/setup"
-                className="text-sm text-primary hover:underline font-medium"
-              >
-                Set up your admin account →
-              </Link>
-            </div>
-          ) : (
-            <p className="text-center text-sm text-muted-foreground mt-6">
+          <div className="mt-6 text-center">
+            <p className="text-sm text-muted-foreground">
               Contact your admin if you don't have an account
             </p>
-          )}
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -1,73 +1,118 @@
-# Welcome to your Lovable project
+# Task Manager – Frontend & Backend Split
 
-## Project info
-
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
-
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+## Project Structure
+```
+task-manager/
+├─ frontend/          # React + Vite (TypeScript) UI
+│   ├─ src/           # Your React source files
+│   ├─ public/        # Static assets
+│   ├─ .env           # Front‑end Supabase config (public anon key)
+│   └─ package.json   # Front‑end dependencies & scripts
+├─ backend/           # Express API server
+│   ├─ src/           # Server code (e.g., server.js, routes)
+│   ├─ .env           # Backend Supabase config (service role key)
+│   └─ package.json   # Backend dependencies & scripts
+├─ .gitignore         # Ignores *.env files automatically
+└─ README.md          # This file
 ```
 
-**Edit a file directly in GitHub**
+## 1️⃣ Create the folders (already done)
+If you need to recreate them:
+```bash
+mkdir frontend backend
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 2️⃣ Install dependencies
+### Front‑end
+```bash
+cd frontend
+npm install   # // turbo – auto‑run
+```
+### Back‑end
+```bash
+cd ../backend
+npm install   # // turbo – auto‑run
+```
 
-**Use GitHub Codespaces**
+## 3️⃣ Environment files
+Both `.env` files are already created. Fill them with your Supabase project details.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Front‑end (`frontend/.env`)
+```dotenv
+VITE_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
+VITE_SUPABASE_ANON_KEY=YOUR-ANON-PUBLIC-KEY
+```
+*The `VITE_` prefix makes the variables available to Vite‑powered client code.*
 
-## What technologies are used for this project?
+### Back‑end (`backend/.env`)
+```dotenv
+SUPABASE_URL=https://YOUR-PROJECT.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=YOUR-SERVICE-ROLE-KEY
+```
+*Use the service‑role key only on the server; never expose it to the client.*
 
-This project is built with:
+## 4️⃣ Sample Supabase client setup
+### Front‑end (`src/lib/supabaseClient.ts`)
+```ts
+import { createClient } from "@supabase/supabase-js";
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-## How can I deploy this project?
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+```
+### Back‑end (`src/supabaseClient.ts`)
+```ts
+import { createClient } from "@supabase/supabase-js";
+import * as dotenv from "dotenv";
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+dotenv.config();
 
-## Can I connect a custom domain to my Lovable project?
+const supabaseUrl = process.env.SUPABASE_URL as string;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
 
-Yes, you can!
+export const supabase = createClient(supabaseUrl, supabaseServiceKey);
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 5️⃣ Running the apps
+### Front‑end development server
+```bash
+cd frontend
+npm run dev   # Vite dev server (http://localhost:5173)
+```
+### Back‑end server
+Create a simple entry point (`backend/src/server.js` or `backend/server.js`):
+```js
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import { supabase } from "./supabaseClient.js"; // adjust path if needed
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+dotenv.config();
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => console.log(`Backend listening on ${PORT}`));
+```
+Then run:
+```bash
+cd backend
+npm run dev   # or npm start if you prefer
+```
+
+## 6️⃣ Git ignore
+`.gitignore` already contains a rule to ignore any `.env` file, so your secrets stay out of version control.
+
+---
+### What to add to the `.env` files to connect to Supabase?
+- **Frontend**: `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (public anon key).
+- **Backend**: `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (service‑role key for privileged server‑side actions).
+
+Replace the placeholder values with the actual values from your Supabase project dashboard (Settings → API). 
+
+Enjoy your split‑frontend/backend architecture! 🎉

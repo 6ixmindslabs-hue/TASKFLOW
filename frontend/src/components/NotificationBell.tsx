@@ -29,8 +29,9 @@ export function NotificationBell() {
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-80 p-0 shadow-card border-border"
+        className="w-[calc(100vw-32px)] sm:w-80 p-0 shadow-card border-border"
         align="end"
+        sideOffset={8}
       >
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h3 className="font-semibold">Notifications</h3>

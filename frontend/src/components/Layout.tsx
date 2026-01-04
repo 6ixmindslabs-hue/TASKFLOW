@@ -135,14 +135,21 @@ export function Layout({ children }: LayoutProps) {
       <div className="flex-1 flex flex-col min-h-screen">
         {/* Top bar */}
         <header className="h-16 border-b border-border bg-card/80 backdrop-blur-sm flex items-center justify-between px-4 lg:px-8 sticky top-0 z-30">
-          <button
-            className="lg:hidden p-2 hover:bg-muted rounded-lg"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-          >
-            {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          <div className="flex items-center gap-4">
+            <button
+              className="lg:hidden p-2 hover:bg-muted rounded-lg"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+            >
+              {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
 
-          <div className="flex-1" />
+            <h1 className="lg:hidden text-xl font-bold flex items-center gap-2">
+              <span className="w-7 h-7 rounded-lg gradient-primary flex items-center justify-center">
+                <CheckSquare className="w-4 h-4 text-primary-foreground" />
+              </span>
+              TaskFlow
+            </h1>
+          </div>
 
           <NotificationBell />
         </header>

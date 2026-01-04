@@ -1,16 +1,30 @@
 import { Layout } from '@/components/Layout';
 import { CreateUserDialog } from '@/components/CreateUserDialog';
+import { EditUserDialog } from '@/components/EditUserDialog';
 import { useUsers } from '@/hooks/useUsers';
 import { useTasks } from '@/hooks/useTasks';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Users as UsersIcon, CheckSquare, Clock } from 'lucide-react';
-import { useMemo } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Loader2, Users as UsersIcon, CheckSquare, Clock, Trash2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 export default function Users() {
-  const { users, loading } = useUsers();
+  const { users, loading, deleteUser } = useUsers();
   const { tasks } = useTasks();
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
 
   const userStats = useMemo(() => {
     return users.map(user => {
@@ -26,6 +40,12 @@ export default function Users() {
       };
     });
   }, [users, tasks]);
+
+  const handleDelete = async (userId: string) => {
+    setDeletingUserId(userId);
+    await deleteUser(userId);
+    setDeletingUserId(null);
+  };
 
   if (loading) {
     return (
@@ -87,10 +107,51 @@ export default function Users() {
                         </Badge>
                       </div>
                     </div>
+                    <div className="flex gap-1">
+                      <EditUserDialog
+                        userId={user.user_id}
+                        username={user.username}
+                        role={user.role || 'member'}
+                      />
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            disabled={deletingUserId === user.user_id}
+                          >
+                            {deletingUserId === user.user_id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete User</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete <strong>{user.username}</strong>?
+                              This action cannot be undone and will remove all associated data.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(user.user_id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-3 gap-4 text-center">
+                  <div className="grid grid-cols-2 xs:grid-cols-3 gap-4 text-center">
                     <div>
                       <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
                         <CheckSquare className="w-4 h-4" />
@@ -105,7 +166,7 @@ export default function Users() {
                       <p className="text-2xl font-bold text-warning">{user.active}</p>
                       <p className="text-xs text-muted-foreground">Active</p>
                     </div>
-                    <div>
+                    <div className="col-span-2 xs:col-span-1">
                       <div className="flex items-center justify-center gap-1 text-success mb-1">
                         <CheckSquare className="w-4 h-4" />
                       </div>
