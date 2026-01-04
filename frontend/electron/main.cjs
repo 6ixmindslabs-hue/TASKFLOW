@@ -3,25 +3,29 @@ const path = require('path');
 
 function createWindow() {
     const win = new BrowserWindow({
-        width: 1200,
+        width: 1280,
         height: 800,
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
             preload: path.join(__dirname, 'preload.cjs')
         },
-        // icon: path.join(__dirname, '../public/favicon.ico')
+        show: false // Don't show until ready
     });
 
-    if (!app.isPackaged) {
-        win.loadURL('http://localhost:8080');
-        // win.webContents.openDevTools();
-    } else {
+    // Production-first loading logic
+    if (app.isPackaged) {
         win.loadFile(path.join(__dirname, '../dist/index.html'));
+    } else {
+        // Development
+        win.loadURL('http://localhost:8080');
     }
 
+    win.once('ready-to-show', () => {
+        win.show();
+    });
 
-    // Remove menu bar
+    // Remove menu bar for production feel
     win.setMenuBarVisibility(false);
 }
 
@@ -40,3 +44,4 @@ app.on('window-all-closed', () => {
         app.quit();
     }
 });
+
