@@ -1,6 +1,5 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const isDev = require('electron-is-dev');
 
 function createWindow() {
     const win = new BrowserWindow({
@@ -14,13 +13,13 @@ function createWindow() {
         // icon: path.join(__dirname, '../public/favicon.ico')
     });
 
-    if (isDev) {
+    if (!app.isPackaged) {
         win.loadURL('http://localhost:8080');
         // win.webContents.openDevTools();
     } else {
-
         win.loadFile(path.join(__dirname, '../dist/index.html'));
     }
+
 
     // Remove menu bar
     win.setMenuBarVisibility(false);
