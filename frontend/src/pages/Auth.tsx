@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { InstallApp } from '@/components/InstallApp';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -59,7 +60,10 @@ export default function Auth() {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 gradient-dark">
+    <div className="min-h-screen flex items-center justify-center p-4 gradient-dark relative">
+      <div className="absolute top-4 right-4 z-50">
+        <InstallApp />
+      </div>
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 -left-32 w-96 h-96 rounded-full bg-primary/20 blur-3xl" />
