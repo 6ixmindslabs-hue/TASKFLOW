@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Task, TaskStatus, Profile } from '@/types';
 import { useAuth } from './useAuth';
@@ -9,53 +9,46 @@ export function useTasks(showOnlyMyTasks: boolean = false) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     if (!user) return;
 
     setLoading(true);
 
-    // Fetch tasks - all tasks for admin dashboard, or only assigned tasks
-    let query = supabase.from('tasks').select('*');
+    try {
+      // Fetch tasks with user profiles in a single query using join
+      let query = supabase
+        .from('tasks')
+        .select(`
+          *,
+          assigned_user:profiles!tasks_assigned_to_fkey(*)
+        `);
 
-    // If showOnlyMyTasks is true OR user is not admin, filter by assigned_to
-    if (showOnlyMyTasks || !isAdmin) {
-      query = query.eq('assigned_to', user.id);
-    }
-
-    const { data: tasksData, error } = await query.order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching tasks:', error);
-      setLoading(false);
-      return;
-    }
-
-    // Fetch profiles for assigned users
-    const userIds = [...new Set((tasksData || []).map(t => t.assigned_to).filter(Boolean))];
-
-    let profilesMap: Record<string, Profile> = {};
-    if (userIds.length > 0) {
-      const { data: profilesData } = await supabase
-        .from('profiles')
-        .select('*')
-        .in('user_id', userIds);
-
-      if (profilesData) {
-        profilesMap = (profilesData as Profile[]).reduce((acc, p) => {
-          acc[p.user_id] = p;
-          return acc;
-        }, {} as Record<string, Profile>);
+      // If showOnlyMyTasks is true OR user is not admin, filter by assigned_to
+      if (showOnlyMyTasks || !isAdmin) {
+        query = query.eq('assigned_to', user.id);
       }
+
+      const { data: tasksData, error } = await query.order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching tasks:', error);
+        setLoading(false);
+        return;
+      }
+
+      // Map the data to match the Task type
+      const tasksWithProfiles = (tasksData || []).map(task => ({
+        ...task,
+        assigned_user: task.assigned_user || undefined,
+      })) as Task[];
+
+      setTasks(tasksWithProfiles);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    } finally {
+      setLoading(false);
     }
-
-    const tasksWithProfiles = (tasksData || []).map(task => ({
-      ...task,
-      assigned_user: task.assigned_to ? profilesMap[task.assigned_to] : undefined,
-    })) as Task[];
-
-    setTasks(tasksWithProfiles);
-    setLoading(false);
-  };
+  }, [user, showOnlyMyTasks, isAdmin]);
 
   const createTask = async (task: {
     title: string;
@@ -191,7 +184,7 @@ export function useTasks(showOnlyMyTasks: boolean = false) {
     if (user) {
       fetchTasks();
     }
-  }, [user, showOnlyMyTasks]);
+  }, [user, fetchTasks]);
 
   return {
     tasks,
