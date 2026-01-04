@@ -11,6 +11,9 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
+  build: {
+    chunkSizeWarningLimit: 1600,
+  },
   plugins: [
     react(),
     mode === "development" && componentTagger(),
