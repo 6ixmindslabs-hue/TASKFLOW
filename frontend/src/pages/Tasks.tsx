@@ -21,9 +21,9 @@ import { TaskStatus } from '@/types';
 
 export default function Tasks() {
   const { isAdmin } = useAuth();
-  const { tasks, loading, updateTaskStatus, deleteTask } = useTasks();
+  const { tasks, loading, updateTaskStatus, deleteTask } = useTasks(true); // Show only my tasks
   const { users } = useUsers();
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<TaskStatus | 'all' | 'overdue'>('all');
   const [userFilter, setUserFilter] = useState<string>('all');
@@ -101,7 +101,7 @@ export default function Tasks() {
               className="pl-10 focus-visible:ring-primary"
             />
           </div>
-          
+
           <div className="flex gap-2 flex-wrap">
             <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
               <SelectTrigger className="w-36 focus:ring-primary">

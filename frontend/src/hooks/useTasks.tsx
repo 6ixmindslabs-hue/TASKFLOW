@@ -4,7 +4,7 @@ import { Task, TaskStatus, Profile } from '@/types';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
 
-export function useTasks() {
+export function useTasks(showOnlyMyTasks: boolean = false) {
   const { user, isAdmin } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -14,12 +14,15 @@ export function useTasks() {
 
     setLoading(true);
 
-    // Fetch only tasks assigned to the current user
-    const { data: tasksData, error } = await supabase
-      .from('tasks')
-      .select('*')
-      .eq('assigned_to', user.id)
-      .order('created_at', { ascending: false });
+    // Fetch tasks - all tasks for admin dashboard, or only assigned tasks
+    let query = supabase.from('tasks').select('*');
+
+    // If showOnlyMyTasks is true OR user is not admin, filter by assigned_to
+    if (showOnlyMyTasks || !isAdmin) {
+      query = query.eq('assigned_to', user.id);
+    }
+
+    const { data: tasksData, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching tasks:', error);
@@ -158,7 +161,7 @@ export function useTasks() {
     if (user) {
       fetchTasks();
     }
-  }, [user]);
+  }, [user, showOnlyMyTasks]);
 
   return {
     tasks,
